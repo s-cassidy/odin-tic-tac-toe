@@ -5,7 +5,7 @@ const game = (() => {
 
   const reset = function() {
     remainingMoves =
-      [...Array(15).keys()];
+      [...Array(9).keys()];
   }
 
   const getRemainingMoves = () => remainingMoves;
@@ -18,6 +18,30 @@ const game = (() => {
   return { reset, getRemainingMoves, removeRemainingMove };
 })();
 
+const combinationsOf = function(array, choose) {
+  if (choose === 1) {
+    return array.map((x) => [x]);
+  }
+
+  let n = array.length;
+  let partialArray;
+  let combinations = [];
+  let element;
+  for (let i = 0; i < n; i++) {
+    element = array[i];
+    partialArray = array.slice(i + 1);
+    for (let combination of combinationsOf(partialArray, choose - 1)) {
+      combination.unshift(element);
+      combinations.push(combination);
+    }
+  }
+  return combinations;
+}
+
+const sum = function(array) {
+  return array.reduce((T, x) => T + x)
+}
+
 
 const newPlayer = function(symbol, game) {
   let squaresOwned = [];
@@ -27,13 +51,42 @@ const newPlayer = function(symbol, game) {
       squaresOwned.push(number);
       game.removeRemainingMove(number);
     }
+  }
 
+  const hasWon = function() {
+    if (squaresOwned.length < 3) {
+      return false;
+    }
+    for (let combination of combinationsOf(squaresOwned, 3)) {
+      if (sum(combination) === 14) {
+        return true;
+      }
+    }
+    return false;
   }
+
+  const canWin = function() {
+    if (squaresOwned.length <= 1) {
+      return false;
+    }
+
+    for (let combination of combinationsOf(squaresOwned, 2)) {
+      if (game.getRemainingMoves().includes(14 - sum(combination))) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+
   return {
-    symbol, squaresOwned, playMove
+    symbol, squaresOwned, playMove, hasWon, canWin
   }
+
 }
 
 
+
+
 game.reset();
-let playerOne = newPlayer("X", null, game);
+let playerOne = newPlayer("X", game);
