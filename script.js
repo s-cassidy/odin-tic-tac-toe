@@ -5,13 +5,35 @@ const game = (() => {
 
   const reset = function() {
     remainingMoves =
-      [...Array(15).keys()].map((i) => i + 1);
+      [...Array(15).keys()];
   }
 
-  const getRemainingMoves = () => console.log(remainingMoves);
+  const getRemainingMoves = () => remainingMoves;
 
-  return { reset, getRemainingMoves };
+  const removeRemainingMove = function(number) {
+    let index = remainingMoves.indexOf(number);
+    remainingMoves.splice(index, 1);
+  }
+
+  return { reset, getRemainingMoves, removeRemainingMove };
 })();
 
+
+const newPlayer = function(symbol, game) {
+  let squaresOwned = [];
+
+  const playMove = function(number) {
+    if (number in game.getRemainingMoves()) {
+      squaresOwned.push(number);
+      game.removeRemainingMove(number);
+    }
+
+  }
+  return {
+    symbol, squaresOwned, playMove
+  }
+}
+
+
 game.reset();
-game.getRemainingMoves();
+let playerOne = newPlayer("X", null, game);
