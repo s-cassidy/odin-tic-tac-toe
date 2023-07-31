@@ -72,25 +72,27 @@ const newPlayer = function(symbol, game) {
     return false;
   }
 
-  const canWin = function() {
-    if (squaresOwned.length <= 1) {
-      return false;
-    }
+  const getWinningMoves = function() {
 
-    for (let combination of combinationsOf(squaresOwned, 2)) {
-      if (game.getRemainingMoves().includes(MAGIC_NUMBER - sum(combination))) {
-        return true;
+    let winningMoves = [];
+    let neededToWin;
+
+    if (squaresOwned.length > 1) {
+      for (let combination of combinationsOf(squaresOwned, 2)) {
+        neededToWin = MAGIC_NUMBER - sum(combination)
+        if (game.getRemainingMoves().includes(neededToWin)) {
+          winningMoves.push(neededToWin);
+        }
       }
     }
-    return false;
+    return winningMoves;
   }
-
 
   return {
-    symbol, squaresOwned, playMove, hasWon, canWin
+    symbol, squaresOwned, playMove, hasWon, getWinningMoves
   }
-
 }
+
 
 
 
