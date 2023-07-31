@@ -140,6 +140,95 @@ function newPlayer(symbol, game) {
   }
 }
 
+function cpuIntelligence(game) {
+  const me = game.currentTurn;
+  let k = game.players.indexOf(me);
+  const opponent = game.players[1 - k];
+  let remaining = game.getRemainingMoves()
+
+  if (me.getWinningMoves()) {
+    me.playMove(me.getWinningMoves()[0])
+    return;
+  }
+
+  if (opponent.getWinningMoves()) {
+    me.playMove(opponent.getWinningMoves()[0])
+    return;
+  }
+
+  if (remaining.length === 9) {
+    let chooser = Math.random();
+    if (chooser < 0.125) {
+      me.playMove(1);
+      return;
+    }
+    else if (chooser < 0.25) {
+      me.playMove(5);
+      return;
+    }
+    else if (chooser < 0.375) {
+      me.playMove(2);
+      return;
+    }
+    else if (chooser < 0.5) {
+      me.playMove(7);
+      return;
+    }
+    else {
+      me.playMove(4);
+      return;
+    }
+  }
+
+  else {
+    let winningCombinations = getWinningCombinations(me.squaresOwned, remaining);
+    let bestMove;
+    if (winningCombinations.length > 0) {
+      bestMove = findBestMove(remaining, winningCombinations);
+    }
+    else {
+      let opponentWinningCombinations = getWinningCombinations(opponent.squaresOwned, remaining);
+      if (winningCombinations.length > 0) {
+        bestMove = findBestMove(remaining, opponentWinningCombinations);
+      }
+      else {
+        bestMove = remaining[0]
+      }
+    }
+    me.playMove(bestMove);
+  }
+
+}
+
+function getWinningCombinations(playersNumbers, remainingNumbers) {
+  let winningCombinations = [];
+  let numberPool = playersNumbers.concat(remainingNumbers);
+  for (let combination of combinationsOf(numberPool, 3)) {
+    if (sum(combination === 12)) {
+      winningCombinations.push(combination);
+    }
+  }
+}
+
+function findBestMove(remainingMoves, winningCombinations) {
+  let optionCounter = {};
+  for (let potentialMove of remainingMoves) {
+    optionCounter[potentialMove] = 0;
+    for (let winningCombination of winningCombinations) {
+      if (winningCombination.includes(potentialMove)) {
+        optionCounter[potentialMove]++;
+      }
+    }
+  }
+
+  let bestMove = potentialMove;
+  for (let option in optionCounter) {
+    if (optionCounter[option] > optionCounter[bestMove]) {
+      bestMove = option;
+    }
+  }
+  return bestMove;
+}
 
 
 game.reset();
