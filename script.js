@@ -5,7 +5,7 @@ const MAGIC_NUMBER = 12;
 
 const game = (() => {
   let remainingMoves;
-  let players;
+  let players = [];
   let currentTurn;
 
   const reset = function() {
@@ -16,19 +16,33 @@ const game = (() => {
   const addPlayer = function(player) {
     if (players.length < 2) {
       players.push(player);
-      player.game = this;
     }
   }
 
   const firstTurn = function() {
     currentTurn = players[Math.floor(Math.random() * 2)];
     currentTurn.takeTurn()
+    this.nextTurn();
+
   }
 
   const nextTurn = function() {
     let k = players.indexOf(currentTurn);
     currentTurn = players[1 - k];
+    console.log(`Player ${players[0].symbol} has ${players[0].squaresOwned}`)
+    console.log(`Player ${players[1].symbol} has ${players[1].squaresOwned}`)
     currentTurn.takeTurn();
+    if (!currentTurn.hasWon()) {
+      if (this.getRemainingMoves()) {
+        this.nextTurn();
+      }
+      else {
+        console.log("Game is a draw");
+      }
+    }
+    else {
+      console.log(`Player ${currentTurn.symbol} has won!`);
+    }
   }
 
 
@@ -39,7 +53,7 @@ const game = (() => {
     remainingMoves.splice(index, 1);
   }
 
-  return { reset, getRemainingMoves, addPlayer, removeRemainingMove };
+  return { reset, getRemainingMoves, addPlayer, removeRemainingMove, nextTurn, firstTurn, currentTurn };
 })();
 
 
@@ -75,9 +89,14 @@ function newPlayer(symbol, game) {
   let squaresOwned = [];
 
   const playMove = function(number) {
-    if (number in game.getRemainingMoves()) {
+    if (game.getRemainingMoves().includes(number)) {
       squaresOwned.push(number);
       game.removeRemainingMove(number);
+      return true;
+    }
+    else {
+      console.log("Number is already owned, please choose another");
+      return false;
     }
   }
 
@@ -108,7 +127,13 @@ function newPlayer(symbol, game) {
     return winningMoves;
   }
 
-  const takeTurn = function() { }
+  const takeTurn = function() {
+    let input = prompt(`Choose a number from ${game.getRemainingMoves()}`)
+    let moveAttempt = playMove(parseInt(input));
+    if (!moveAttempt) {
+      takeTurn();
+    }
+  }
 
   return {
     symbol, squaresOwned, playMove, hasWon, getWinningMoves, takeTurn
@@ -117,7 +142,9 @@ function newPlayer(symbol, game) {
 
 
 
-
-
 game.reset();
 let playerOne = newPlayer("X", game);
+let playerTwo = newPlayer("O", game);
+game.addPlayer(playerOne);
+game.addPlayer(playerTwo);
+game.firstTurn();
