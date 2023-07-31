@@ -1,5 +1,8 @@
 'use strict';
 
+const MAGIC_NUMBER = 12;
+
+
 const game = (() => {
   let remainingMoves;
 
@@ -18,21 +21,25 @@ const game = (() => {
   return { reset, getRemainingMoves, removeRemainingMove };
 })();
 
+
 const combinationsOf = function(array, choose) {
+  let n = array.length;
+  let combinations = [];
+
   if (choose === 1) {
-    return array.map((x) => [x]);
+    combinations = array.map((x) => [x]);
   }
 
-  let n = array.length;
-  let partialArray;
-  let combinations = [];
-  let element;
-  for (let i = 0; i < n; i++) {
-    element = array[i];
-    partialArray = array.slice(i + 1);
-    for (let combination of combinationsOf(partialArray, choose - 1)) {
-      combination.unshift(element);
-      combinations.push(combination);
+  else {
+    let partialArray;
+    let element;
+    for (let i = 0; i < n; i++) {
+      element = array[i];
+      partialArray = array.slice(i + 1);
+      for (let combination of combinationsOf(partialArray, choose - 1)) {
+        combination.unshift(element);
+        combinations.push(combination);
+      }
     }
   }
   return combinations;
@@ -58,7 +65,7 @@ const newPlayer = function(symbol, game) {
       return false;
     }
     for (let combination of combinationsOf(squaresOwned, 3)) {
-      if (sum(combination) === 14) {
+      if (sum(combination) === MAGIC_NUMBER) {
         return true;
       }
     }
@@ -71,7 +78,7 @@ const newPlayer = function(symbol, game) {
     }
 
     for (let combination of combinationsOf(squaresOwned, 2)) {
-      if (game.getRemainingMoves().includes(14 - sum(combination))) {
+      if (game.getRemainingMoves().includes(MAGIC_NUMBER - sum(combination))) {
         return true;
       }
     }
