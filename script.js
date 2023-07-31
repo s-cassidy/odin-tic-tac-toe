@@ -5,11 +5,32 @@ const MAGIC_NUMBER = 12;
 
 const game = (() => {
   let remainingMoves;
+  let players;
+  let currentTurn;
 
   const reset = function() {
     remainingMoves =
       [...Array(9).keys()];
   }
+
+  const addPlayer = function(player) {
+    if (players.length < 2) {
+      players.push(player);
+      player.game = this;
+    }
+  }
+
+  const firstTurn = function() {
+    currentTurn = players[Math.floor(Math.random() * 2)];
+    currentTurn.takeTurn()
+  }
+
+  const nextTurn = function() {
+    let k = players.indexOf(currentTurn);
+    currentTurn = players[1 - k];
+    currentTurn.takeTurn();
+  }
+
 
   const getRemainingMoves = () => remainingMoves;
 
@@ -18,7 +39,7 @@ const game = (() => {
     remainingMoves.splice(index, 1);
   }
 
-  return { reset, getRemainingMoves, removeRemainingMove };
+  return { reset, getRemainingMoves, addPlayer, removeRemainingMove };
 })();
 
 
@@ -50,7 +71,7 @@ const sum = function(array) {
 }
 
 
-const newPlayer = function(symbol, game) {
+function newPlayer(symbol, game) {
   let squaresOwned = [];
 
   const playMove = function(number) {
@@ -73,7 +94,6 @@ const newPlayer = function(symbol, game) {
   }
 
   const getWinningMoves = function() {
-
     let winningMoves = [];
     let neededToWin;
 
@@ -88,8 +108,10 @@ const newPlayer = function(symbol, game) {
     return winningMoves;
   }
 
+  const takeTurn = function() { }
+
   return {
-    symbol, squaresOwned, playMove, hasWon, getWinningMoves
+    symbol, squaresOwned, playMove, hasWon, getWinningMoves, takeTurn
   }
 }
 
