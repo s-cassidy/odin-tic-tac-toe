@@ -21,9 +21,7 @@ const game = (() => {
 
   const firstTurn = function() {
     currentTurn = players[Math.floor(Math.random() * 2)];
-    currentTurn.takeTurn()
     this.nextTurn();
-
   }
 
   const nextTurn = function() {
@@ -31,7 +29,7 @@ const game = (() => {
     currentTurn = players[1 - k];
     console.log(`Player ${players[0].symbol} has ${players[0].squaresOwned}`)
     console.log(`Player ${players[1].symbol} has ${players[1].squaresOwned}`)
-    currentTurn.takeTurn();
+    currentTurn.takeTurn(this);
     if (!currentTurn.hasWon()) {
       if (this.getRemainingMoves()) {
         this.nextTurn();
@@ -47,13 +45,15 @@ const game = (() => {
 
 
   const getRemainingMoves = () => remainingMoves;
+  const getPlayers = () => players;
+  const getCurrentTurn = () => currentTurn;
 
   const removeRemainingMove = function(number) {
     let index = remainingMoves.indexOf(number);
     remainingMoves.splice(index, 1);
   }
 
-  return { reset, getRemainingMoves, addPlayer, removeRemainingMove, nextTurn, firstTurn, currentTurn };
+  return { reset, getRemainingMoves, addPlayer, getPlayers, removeRemainingMove, nextTurn, firstTurn, getCurrentTurn };
 })();
 
 
@@ -85,7 +85,7 @@ const sum = function(array) {
 }
 
 
-function newPlayer(symbol, game) {
+function newPlayer(symbol, game, turnTaker) {
   let squaresOwned = [];
 
   const playMove = function(number) {
@@ -95,7 +95,7 @@ function newPlayer(symbol, game) {
       return true;
     }
     else {
-      console.log("Number is already owned, please choose another");
+      console.log(`${number} is already owned, please choose another`);
       return false;
     }
   }
@@ -127,91 +127,106 @@ function newPlayer(symbol, game) {
     return winningMoves;
   }
 
-  const takeTurn = function() {
-    let input = prompt(`Choose a number from ${game.getRemainingMoves()}`)
-    let moveAttempt = playMove(parseInt(input));
-    if (!moveAttempt) {
-      takeTurn();
-    }
-  }
+  const takeTurn = turnTaker;
 
   return {
     symbol, squaresOwned, playMove, hasWon, getWinningMoves, takeTurn
   }
 }
 
-function cpuIntelligence(game) {
-  const me = game.currentTurn;
-  let k = game.players.indexOf(me);
-  const opponent = game.players[1 - k];
-  let remaining = game.getRemainingMoves()
+function consoleMovePrompt(game) {
+  let input = prompt(`Choose a number from ${game.getRemainingMoves()}`)
+  let moveAttempt = this.playMove(parseInt(input));
+  if (!moveAttempt) {
+    takeTurn();
+  }
+}
 
-  if (me.getWinningMoves()) {
+
+function cpuIntelligence(game) {
+  const me = game.getCurrentTurn();
+  let k = game.getPlayers().indexOf(me);
+  const opponent = game.getPlayers()[1 - k];
+  let remaining = game.getRemainingMoves();
+
+  if (me.getWinningMoves().length > 0) {
     me.playMove(me.getWinningMoves()[0])
     return;
   }
 
-  if (opponent.getWinningMoves()) {
+  if (opponent.getWinningMoves().length > 0) {
     me.playMove(opponent.getWinningMoves()[0])
     return;
   }
 
   if (remaining.length === 9) {
-    let chooser = Math.random();
-    if (chooser < 0.125) {
-      me.playMove(1);
-      return;
-    }
-    else if (chooser < 0.25) {
-      me.playMove(5);
-      return;
-    }
-    else if (chooser < 0.375) {
-      me.playMove(2);
-      return;
-    }
-    else if (chooser < 0.5) {
-      me.playMove(7);
-      return;
-    }
-    else {
-      me.playMove(4);
-      return;
-    }
+    me.playMove(pickFirstMove())
+    return;
   }
 
+  let moveTowardAWin = chooseAMove(me, remaining);
+  console.log(moveTowardAWin);
+  if (moveTowardAWin !== null) {
+    me.playMove(moveTowardAWin);
+    return;
+  }
+
+  let moveTowardADraw = chooseAMove(opponent, remaining);
+  if (moveTowardADraw !== null) {
+    me.playMove(moveTowardADraw);
+    return;
+  }
+
+  me.playMove(randomChoice(remaining))
+  return;
+}
+
+function chooseAMove(player, remaining) {
+  let bestMoves;
+  let winningCombinations = getWinningCombinations(player.squaresOwned, remaining);
+  if (winningCombinations.length > 0) {
+    bestMoves = findBestMoves(remaining, winningCombinations);
+    return randomChoice(bestMoves);
+  }
   else {
-    let winningCombinations = getWinningCombinations(me.squaresOwned, remaining);
-    let bestMove;
-    if (winningCombinations.length > 0) {
-      bestMove = findBestMove(remaining, winningCombinations);
-    }
-    else {
-      let opponentWinningCombinations = getWinningCombinations(opponent.squaresOwned, remaining);
-      if (winningCombinations.length > 0) {
-        bestMove = findBestMove(remaining, opponentWinningCombinations);
-      }
-      else {
-        bestMove = remaining[0]
-      }
-    }
-    me.playMove(bestMove);
+    return null;
   }
 
+
+}
+
+function pickFirstMove() {
+  let chooser = Math.random();
+  if (chooser < 0.125) {
+    return 1;
+  }
+  else if (chooser < 0.25) {
+    return 5;
+  }
+  else if (chooser < 0.375) {
+    return 2;
+  }
+  else if (chooser < 0.5) {
+    return 7;
+  }
+  else {
+    return 4;
+  }
 }
 
 function getWinningCombinations(playersNumbers, remainingNumbers) {
   let winningCombinations = [];
   let numberPool = playersNumbers.concat(remainingNumbers);
   for (let combination of combinationsOf(numberPool, 3)) {
-    if (sum(combination === 12)) {
+    if (sum(combination) === MAGIC_NUMBER) {
       winningCombinations.push(combination);
     }
   }
+  return winningCombinations;
 }
 
-function findBestMove(remainingMoves, winningCombinations) {
-  let optionCounter = {};
+function findBestMoves(remainingMoves, winningCombinations) {
+  let optionCounter = [];
   for (let potentialMove of remainingMoves) {
     optionCounter[potentialMove] = 0;
     for (let winningCombination of winningCombinations) {
@@ -221,19 +236,30 @@ function findBestMove(remainingMoves, winningCombinations) {
     }
   }
 
-  let bestMove = potentialMove;
+  let maxOptions = 0;
   for (let option in optionCounter) {
-    if (optionCounter[option] > optionCounter[bestMove]) {
-      bestMove = option;
+    if (optionCounter[option] > maxOptions) {
+      maxOptions = optionCounter[option];
     }
   }
-  return bestMove;
+  let bestMoves = [];
+  for (let option in optionCounter) {
+    if (optionCounter[option] === maxOptions) {
+      bestMoves.push(parseInt(option));
+    }
+  }
+  return bestMoves;
+}
+
+function randomChoice(array) {
+  let n = array.length;
+  return array[Math.floor(Math.random() * n)];
 }
 
 
 game.reset();
-let playerOne = newPlayer("X", game);
-let playerTwo = newPlayer("O", game);
+let playerOne = newPlayer("X", game, consoleMovePrompt);
+let playerTwo = newPlayer("O", game, cpuIntelligence);
 game.addPlayer(playerOne);
 game.addPlayer(playerTwo);
 game.firstTurn();
