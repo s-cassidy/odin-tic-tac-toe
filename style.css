@@ -2,3 +2,17 @@ body {
   background-color: black; 
    }
 
+.game-board {
+  display: grid;
+  grid-template: 100px 100px 100px / 100px 100px 100px;
+  gaps: 2px;
+}
+
+.grid-square {
+border: 2px solid white;
+  color: white;
+  font-size : 80px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}

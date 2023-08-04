@@ -25,22 +25,18 @@ const game = (() => {
   }
 
   const nextTurn = function() {
-    let k = players.indexOf(currentTurn);
-    currentTurn = players[1 - k];
-    console.log(`Player ${players[0].symbol} has ${players[0].squaresOwned}`)
-    console.log(`Player ${players[1].symbol} has ${players[1].squaresOwned}`)
-    currentTurn.takeTurn(this);
     if (!currentTurn.hasWon()) {
-      if (this.getRemainingMoves()) {
-        this.nextTurn();
-      }
-      else {
+      if (this.getRemainingMoves().length === 0) {
         console.log("Game is a draw");
       }
     }
     else {
       console.log(`Player ${currentTurn.symbol} has won!`);
+      return;
     }
+    let k = players.indexOf(currentTurn);
+    currentTurn = players[1 - k];
+    currentTurn.takeTurn(this);
   }
 
 
@@ -92,6 +88,8 @@ function newPlayer(symbol, game, turnTaker) {
     if (game.getRemainingMoves().includes(number)) {
       squaresOwned.push(number);
       game.removeRemainingMove(number);
+      drawBoard(game);
+      game.nextTurn();
       return true;
     }
     else {
@@ -131,6 +129,16 @@ function newPlayer(symbol, game, turnTaker) {
 
   return {
     symbol, squaresOwned, playMove, hasWon, getWinningMoves, takeTurn
+  }
+}
+
+function addMoveButtons(game) {
+  for (let square of grid) {
+    let sqNo = parseInt(square.getAttribute("data-square"));
+    square.removeEventListener('click', () => game.getCurrentTurn().playMove(sqNo));
+    if (game.getRemainingMoves().includes(sqNo)) {
+      square.addEventListener('click', () => game.getCurrentTurn().playMove(sqNo))
+    }
   }
 }
 
@@ -256,9 +264,25 @@ function randomChoice(array) {
   return array[Math.floor(Math.random() * n)];
 }
 
+const grid = document.querySelectorAll(".grid-square");
+
+function drawBoard(game) {
+  for (let square of grid) {
+    square.textContent = "";
+  }
+
+  for (let player of game.getPlayers()) {
+    for (let square of grid) {
+      if (player.squaresOwned.includes(parseInt(square.getAttribute("data-square")))) {
+        square.textContent = player.symbol;
+      }
+    }
+  }
+}
+
 
 game.reset();
-let playerOne = newPlayer("X", game, consoleMovePrompt);
+let playerOne = newPlayer("X", game, addMoveButtons);
 let playerTwo = newPlayer("O", game, cpuIntelligence);
 game.addPlayer(playerOne);
 game.addPlayer(playerTwo);
