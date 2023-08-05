@@ -36,6 +36,7 @@ const game = (() => {
     }
     let k = players.indexOf(currentTurn);
     currentTurn = players[1 - k];
+    console.log(`${currentTurn.symbol}.takeTurn called`);
     currentTurn.takeTurn(this);
   }
 
@@ -85,6 +86,7 @@ function newPlayer(symbol, game, turnTaker) {
   let squaresOwned = [];
 
   const playMove = function(number) {
+    console.log("playMove called");
     if (game.getRemainingMoves().includes(number)) {
       squaresOwned.push(number);
       game.removeRemainingMove(number);
@@ -93,7 +95,7 @@ function newPlayer(symbol, game, turnTaker) {
       return true;
     }
     else {
-      console.log(`${number} is already owned, please choose another`);
+      console.log(`Player ${symbol} tried to play ${number}, is already owned, please choose another`);
       return false;
     }
   }
@@ -134,10 +136,14 @@ function newPlayer(symbol, game, turnTaker) {
 
 function addMoveButtons(game) {
   for (let square of grid) {
+    let playSquare = function(event) {
+      game.getCurrentTurn().playMove(
+        parseInt(event.target.getAttribute("data-square")))
+    }
     let sqNo = parseInt(square.getAttribute("data-square"));
-    square.removeEventListener('click', () => game.getCurrentTurn().playMove(sqNo));
+    square.removeEventListener('click', playSquare);
     if (game.getRemainingMoves().includes(sqNo)) {
-      square.addEventListener('click', () => game.getCurrentTurn().playMove(sqNo))
+      square.addEventListener('click', playSquare, { once: true })
     }
   }
 }
