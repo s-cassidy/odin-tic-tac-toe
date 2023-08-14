@@ -20,7 +20,7 @@ const gameBoard = (() => {
 
 
 
-const domController = (() => {
+const domBoardController = (() => {
   let grid = document.querySelectorAll(".grid-square");
   function addBoardListeners() {
     for (let square of grid) {
@@ -78,7 +78,7 @@ const game = ((board) => {
     }
     currentTurn.squaresOwned.push(number);
     board.removeRemainingMove(number);
-    domController.redrawBoard(this);
+    domBoardController.redrawBoard(this);
 
     if (!currentTurn.hasWon()) {
       if (checkDraw()) {
@@ -95,6 +95,32 @@ const game = ((board) => {
   return { addPlayer, playMove, players, pickFirstMove }
 
 })(gameBoard)
+
+
+const gameOptionsController = function() {
+  const swapButton = document.querySelector(".swap")
+  const goButton = document.querySelector(".go")
+  const pOneName = document.querySelector("#player-one-name")
+  const pOneSymbol = document.querySelector("#player-one-symbol")
+  const pOneScore = document.querySelector("#player-one-score")
+  const pTwoName = document.querySelector("#player-two-name")
+  const pTwoSymbol = document.querySelector("#player-two-symbol")
+  const pTwoScore = document.querySelector("#player-two-score")
+  swapButton.addEventListener('click', swapSymbols)
+
+  function swapSymbols() {
+    if (pOneSymbol.value === "X") {
+      pOneSymbol.value = "O";
+      pTwoSymbol.value = "X";
+    } else {
+      pOneSymbol.value = "X";
+      pTwoSymbol.value = "O";
+    }
+  }
+
+  return { swapSymbols }
+}()
+
 
 const utils = (() => {
   const combinationsOf = function(array, choose) {
@@ -150,7 +176,7 @@ function newPlayer(symbol, name) {
 
 
 gameBoard.reset();
-domController.addBoardListeners();
+domBoardController.addBoardListeners();
 let playerOne = newPlayer("X", "Sam");
 let playerTwo = newPlayer("O", "Kirsty");
 game.addPlayer(playerOne);

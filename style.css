@@ -1,10 +1,11 @@
 body {
   background-color: black; 
+  color: white;
    }
 
 .game-board {
   display: grid;
-  grid-template: 100px 100px 100px / 100px 100px 100px;
+  grid-template: 200px 200px 200px / 200px 200px 200px;
   gaps: 2px;
 }
 
@@ -14,5 +15,11 @@ border: 2px solid white;
   font-size : 80px;
   display: flex;
   justify-content: center;
+  align-items: center;
+}
+
+.horizontal-form {
+  display: flex;
+  width: 600px;
   align-items: center;
 }
