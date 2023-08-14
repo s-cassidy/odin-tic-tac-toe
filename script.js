@@ -87,7 +87,8 @@ const game = ((board) => {
       }
       advanceTurn();
     } else {
-      console.log(`Player ${currentTurn.symbol} has won!`);
+      currentTurn.score++;
+      gameOptionsController.redrawScore(currentTurn.symbol, currentTurn.score);
       return;
     }
   }
@@ -100,25 +101,53 @@ const game = ((board) => {
 const gameOptionsController = function() {
   const swapButton = document.querySelector(".swap")
   const goButton = document.querySelector(".go")
-  const pOneName = document.querySelector("#player-one-name")
-  const pOneSymbol = document.querySelector("#player-one-symbol")
-  const pOneScore = document.querySelector("#player-one-score")
-  const pTwoName = document.querySelector("#player-two-name")
-  const pTwoSymbol = document.querySelector("#player-two-symbol")
-  const pTwoScore = document.querySelector("#player-two-score")
+  let pOne = {};
+  let pTwo = {};
+  pOne.name = document.querySelector("#player-one-name")
+  pOne.symbol = document.querySelector("#player-one-symbol")
+  pOne.score = document.querySelector("#player-one-score")
+  pTwo.name = document.querySelector("#player-two-name")
+  pTwo.symbol = document.querySelector("#player-two-symbol")
+  pTwo.score = document.querySelector("#player-two-score")
   swapButton.addEventListener('click', swapSymbols)
+  goButton.addEventListener('click', pressGo)
 
   function swapSymbols() {
-    if (pOneSymbol.value === "X") {
-      pOneSymbol.value = "O";
-      pTwoSymbol.value = "X";
+    if (pOne.symbol.value === "X") {
+      pOne.symbol.value = "O";
+      pTwo.symbol.value = "X";
     } else {
-      pOneSymbol.value = "X";
-      pTwoSymbol.value = "O";
+      pOne.symbol.value = "X";
+      pTwo.symbol.value = "O";
     }
   }
 
-  return { swapSymbols }
+  function redrawScore(symbol, score) {
+    for (let player of [pOne, pTwo]) {
+      if (player.symbol.value === symbol) {
+        player.score.value = score;
+      }
+    }
+  }
+
+  function pressGo() {
+    if (pOne.name.value === "" || pTwo.name.value === "") {
+      return;
+    }
+    let playerOne = newPlayer(pOne.symbol.value, pOne.name.value);
+    let playerTwo = newPlayer(pTwo.symbol.value, pTwo.name.value);
+    game.addPlayer(playerOne);
+    game.addPlayer(playerTwo);
+    for (let prop in pOne) {
+      pOne[prop].classList.add("fixed");
+      pTwo[prop].classList.add("fixed");
+    }
+
+    game.pickFirstMove();
+  }
+
+
+  return { swapSymbols, redrawScore }
 }()
 
 
@@ -177,8 +206,3 @@ function newPlayer(symbol, name) {
 
 gameBoard.reset();
 domBoardController.addBoardListeners();
-let playerOne = newPlayer("X", "Sam");
-let playerTwo = newPlayer("O", "Kirsty");
-game.addPlayer(playerOne);
-game.addPlayer(playerTwo);
-game.pickFirstMove();
