@@ -11,6 +11,11 @@
 
 <body>
   <div class="container">
+    <div class="title-container">
+      <span class="noughts">Noughts</span>
+      <span class="and">and</span>
+      <span class="crosses">Crosses</span>
+    </div>
     <div class="game-board">
       <div class="grid-square" data-square="1">
 
@@ -55,9 +60,9 @@
             <label for="player-one-score">Score</label>
             <input type="text" name="" id="player-one-score" value="0" readonly />
           </fieldset>
-
-          <button class="swap" type="button">Swap!</button>
-
+          <div class="swap-container">
+            <button class="swap" type="button">Swap!</button>
+          </div>
           <fieldset class="player-two">
             <legend>P2</legend>
             <label for="player-two-name">Name</label>
@@ -69,8 +74,11 @@
             <label for="player-two-score">Score</label>
             <input type="text" name="" id="player-two-score" value="0" readonly />
           </fieldset>
+
         </div>
-        <button class="go" type="button">Go!</button>
+        <div class="go-container">
+          <button class="go" type="button">Go!</button>
+        </div>
       </form>
 
 

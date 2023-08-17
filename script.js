@@ -3,7 +3,7 @@
 const MAGIC_NUMBER = 12;
 
 const gameBoard = (() => {
-  let remainingMoves = [];
+  let remainingMoves = []
 
   const reset = function() {
     this.remainingMoves =
@@ -22,6 +22,7 @@ const gameBoard = (() => {
 
 const domBoardController = (() => {
   let grid = document.querySelectorAll(".grid-square");
+
   function addBoardListeners() {
     for (let square of grid) {
       let playSquare = function(event) {
@@ -45,7 +46,15 @@ const domBoardController = (() => {
       }
     }
   }
-  return { addBoardListeners, redrawBoard }
+
+  function clearBoard() {
+    for (let square of grid) {
+      square.textContent = "";
+    }
+  }
+
+
+  return { clearBoard, addBoardListeners, redrawBoard }
 })()
 
 const game = ((board) => {
@@ -62,6 +71,12 @@ const game = ((board) => {
     currentTurn = players[Math.floor(Math.random() * 2)];
   }
 
+  const reset = function() {
+    players.pop();
+    players.pop();
+    currentTurn = null;
+  }
+
   const advanceTurn = function() {
     let k = players.indexOf(currentTurn);
     currentTurn = players[1 - k];
@@ -72,6 +87,10 @@ const game = ((board) => {
   }
 
   const playMove = function(number) {
+    if (!currentTurn) {
+      return;
+    }
+
     if (!board.remainingMoves.includes(number)) {
       console.log("Move already taken!");
       return;
@@ -93,7 +112,7 @@ const game = ((board) => {
     }
   }
 
-  return { addPlayer, playMove, players, pickFirstMove }
+  return { addPlayer, reset, playMove, players, pickFirstMove }
 
 })(gameBoard)
 
@@ -109,8 +128,17 @@ const gameOptionsController = function() {
   pTwo.name = document.querySelector("#player-two-name")
   pTwo.symbol = document.querySelector("#player-two-symbol")
   pTwo.score = document.querySelector("#player-two-score")
-  swapButton.addEventListener('click', swapSymbols)
-  goButton.addEventListener('click', pressGo)
+
+  let resetButton = document.createElement("button");
+  resetButton.setAttribute("type", "button");
+  resetButton.textContent = "Reset";
+  resetButton.classList.add("reset-button");
+  let goContainer = document.querySelector(".go-container");
+  let swapContainer = document.querySelector(".swap-container");
+  swapButton.addEventListener('click', swapSymbols);
+  resetButton.addEventListener('click', pressReset)
+
+  goButton.addEventListener('click', pressGo);
 
   function swapSymbols() {
     if (pOne.symbol.value === "X") {
@@ -142,8 +170,25 @@ const gameOptionsController = function() {
       pOne[prop].classList.add("fixed");
       pTwo[prop].classList.add("fixed");
     }
+    gameBoard.reset();
+    domBoardController.addBoardListeners();
+
+    goButton.remove();
+    swapButton.remove();
+    goContainer.appendChild(resetButton);
 
     game.pickFirstMove();
+  }
+
+  function pressReset() {
+    resetButton.remove();
+    swapContainer.appendChild(swapButton);
+    goContainer.appendChild(goButton);
+    game.reset();
+    gameBoard.reset();
+    domBoardController.clearBoard();
+    pOne.score.value = 0;
+    pTwo.score.value = 0;
   }
 
 
@@ -204,5 +249,3 @@ function newPlayer(symbol, name) {
 }
 
 
-gameBoard.reset();
-domBoardController.addBoardListeners();
