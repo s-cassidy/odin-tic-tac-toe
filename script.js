@@ -29,7 +29,7 @@ const domBoardController = (() => {
         game.playMove(
           parseInt(event.target.getAttribute("data-square")))
       }
-      square.addEventListener('click', playSquare, { once: true })
+      square.addEventListener('click', playSquare)
     }
   }
 
@@ -107,12 +107,21 @@ const game = ((board) => {
       advanceTurn();
     } else {
       currentTurn.score++;
+      gameBoard.reset()
+      for (const player of players) {
+        while (player.squaresOwned.length > 0) {
+          player.squaresOwned.pop();
+        }
+      }
       gameOptionsController.redrawScore(currentTurn.symbol, currentTurn.score);
+      domBoardController.clearBoard();
+      setTimeout(advanceTurn, 500);
       return;
     }
   }
 
-  return { addPlayer, reset, playMove, players, pickFirstMove }
+  return { addPlayer, reset, playMove, players, pickFirstMove, currentTurn }
+
 
 })(gameBoard)
 
@@ -190,7 +199,6 @@ const gameOptionsController = function() {
     pOne.score.value = 0;
     pTwo.score.value = 0;
   }
-
 
   return { swapSymbols, redrawScore }
 }()
