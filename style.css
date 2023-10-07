@@ -6,7 +6,7 @@ body {
 .game-board {
   display: grid;
   grid-template: 200px 200px 200px / 200px 200px 200px;
-  gaps: 2px;
+  gap: 1px;
 }
 
 .grid-square {
@@ -26,4 +26,12 @@ border: 2px solid white;
 
 .swap-container {
   min-width: 50px;
+}
+
+.winning {
+  color: green;
+}
+
+.hover {
+  color: grey;
 }

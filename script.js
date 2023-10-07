@@ -3,11 +3,13 @@
 const MAGIC_NUMBER = 12;
 
 const gameBoard = (() => {
-  let remainingMoves = []
+  let remainingMoves = [];
 
   const reset = function() {
-    this.remainingMoves =
-      [...Array(9).keys()];
+    for (let j of [...Array(9).keys()]) {
+      remainingMoves.push(j)
+
+    }
   }
 
   const removeRemainingMove = function(number) {
@@ -20,16 +22,34 @@ const gameBoard = (() => {
 
 
 
-const domBoardController = (() => {
+const domBoardController = ((board) => {
   let grid = document.querySelectorAll(".grid-square");
 
   function addBoardListeners() {
     for (let square of grid) {
       let playSquare = function(event) {
-        game.playMove(
-          parseInt(event.target.getAttribute("data-square")))
+        let squareNumber = parseInt(event.target.getAttribute("data-square"));
+        square.classList.remove('hover');
+        game.playMove(squareNumber)
       }
       square.addEventListener('click', playSquare)
+      let hoverSquare = function(event) {
+        let squareNumber = parseInt(event.target.getAttribute("data-square"));
+        if (board.remainingMoves.includes(squareNumber)) {
+          square.classList.add('hover');
+          square.textContent = game.getSymbol();
+        }
+      }
+      let leaveSquare = function(event) {
+        let squareNumber = parseInt(event.target.getAttribute("data-square"));
+        if (board.remainingMoves.includes(squareNumber)) {
+          square.classList.remove('hover');
+          square.textContent = '';
+        }
+
+      }
+      square.addEventListener('mouseenter', hoverSquare)
+      square.addEventListener('mouseleave', leaveSquare)
     }
   }
 
@@ -47,15 +67,30 @@ const domBoardController = (() => {
     }
   }
 
+  function showWin(combination) {
+    for (let square of grid) {
+      if (combination.includes(parseInt(square.getAttribute("data-square")))) {
+        square.classList.add("winning");
+        setTimeout(() => this.hideWin(), 2000)
+      }
+    }
+  }
+
+  function hideWin() {
+    for (let square of grid) {
+      square.classList.remove("winning")
+    }
+    clearBoard();
+  }
+
   function clearBoard() {
     for (let square of grid) {
       square.textContent = "";
     }
   }
+  return { clearBoard, addBoardListeners, redrawBoard, showWin, hideWin }
+})(gameBoard)
 
-
-  return { clearBoard, addBoardListeners, redrawBoard }
-})()
 
 const game = ((board) => {
   let players = [];
@@ -64,6 +99,12 @@ const game = ((board) => {
   const addPlayer = function(player) {
     if (players.length < 2) {
       players.push(player);
+    }
+  }
+
+  const getSymbol = function() {
+    if (currentTurn) {
+      return currentTurn.symbol
     }
   }
 
@@ -106,23 +147,33 @@ const game = ((board) => {
       }
       advanceTurn();
     } else {
+      domBoardController.showWin(currentTurn.hasWon());
       currentTurn.score++;
-      gameBoard.reset()
-      for (const player of players) {
-        while (player.squaresOwned.length > 0) {
-          player.squaresOwned.pop();
-        }
-      }
-      gameOptionsController.redrawScore(currentTurn.symbol, currentTurn.score);
-      domBoardController.clearBoard();
-      setTimeout(advanceTurn, 500);
-      return;
+      setTimeout(endRound, 2001);
     }
   }
 
-  return { addPlayer, reset, playMove, players, pickFirstMove, currentTurn }
+  const endRound = function() {
+    gameBoard.reset()
+    for (const player of players) {
+      while (player.squaresOwned.length > 0) {
+        player.squaresOwned.pop();
+      }
+    }
+    gameOptionsController.redrawScore(currentTurn.symbol, currentTurn.score);
+    setTimeout(advanceTurn, 100);
+    return;
+  }
 
-
+  return {
+    addPlayer,
+    currentTurn,
+    getSymbol,
+    reset,
+    playMove,
+    players,
+    pickFirstMove
+  }
 })(gameBoard)
 
 
@@ -245,7 +296,7 @@ function newPlayer(symbol, name) {
     }
     for (let combination of utils.combinationsOf(squaresOwned, 3)) {
       if (utils.sum(combination) === MAGIC_NUMBER) {
-        return true;
+        return combination;
       }
     }
     return false;
