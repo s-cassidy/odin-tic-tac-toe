@@ -8,7 +8,6 @@ const gameBoard = (() => {
   const reset = function() {
     for (let j of [...Array(9).keys()]) {
       remainingMoves.push(j)
-
     }
   }
 
@@ -19,7 +18,6 @@ const gameBoard = (() => {
 
   return { remainingMoves, reset, removeRemainingMove }
 })()
-
 
 
 const domBoardController = ((board) => {
@@ -95,6 +93,7 @@ const domBoardController = ((board) => {
 const game = ((board) => {
   let players = [];
   let currentTurn;
+  let isPlaying = false;
 
   const addPlayer = function(player) {
     if (players.length < 2) {
@@ -109,7 +108,9 @@ const game = ((board) => {
   }
 
   const pickFirstMove = function() {
+    isPlaying = true;
     currentTurn = players[Math.floor(Math.random() * 2)];
+    gameOptionsController.showTurn(currentTurn);
   }
 
   const reset = function() {
@@ -119,8 +120,10 @@ const game = ((board) => {
   }
 
   const advanceTurn = function() {
+    isPlaying = true;
     let k = players.indexOf(currentTurn);
     currentTurn = players[1 - k];
+    gameOptionsController.showTurn(currentTurn);
   }
 
   const checkDraw = function() {
@@ -128,7 +131,7 @@ const game = ((board) => {
   }
 
   const playMove = function(number) {
-    if (!currentTurn) {
+    if (!isPlaying) {
       return;
     }
 
@@ -148,6 +151,7 @@ const game = ((board) => {
       advanceTurn();
     } else {
       domBoardController.showWin(currentTurn.hasWon());
+      isPlaying = false;
       currentTurn.score++;
       setTimeout(endRound, 2001);
     }
@@ -172,7 +176,8 @@ const game = ((board) => {
     reset,
     playMove,
     players,
-    pickFirstMove
+    pickFirstMove,
+    isPlaying,
   }
 })(gameBoard)
 
@@ -188,6 +193,8 @@ const gameOptionsController = function() {
   pTwo.name = document.querySelector("#player-two-name")
   pTwo.symbol = document.querySelector("#player-two-symbol")
   pTwo.score = document.querySelector("#player-two-score")
+  pOne.box = document.querySelector(".player-one")
+  pTwo.box = document.querySelector(".player-two")
 
   let resetButton = document.createElement("button");
   resetButton.setAttribute("type", "button");
@@ -217,6 +224,18 @@ const gameOptionsController = function() {
       }
     }
   }
+
+  function showTurn(currentTurn) {
+    for (let player of [pOne, pTwo]) {
+      if (player.symbol.value === currentTurn.symbol) {
+        player.box.classList.add("current-turn");
+      }
+      else {
+        player.box.classList.remove("current-turn");
+      }
+    }
+  }
+
 
   function pressGo() {
     if (pOne.name.value === "" || pTwo.name.value === "") {
@@ -251,7 +270,7 @@ const gameOptionsController = function() {
     pTwo.score.value = 0;
   }
 
-  return { swapSymbols, redrawScore }
+  return { swapSymbols, showTurn, redrawScore }
 }()
 
 

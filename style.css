@@ -35,3 +35,7 @@ border: 2px solid white;
 .hover {
   color: grey;
 }
+
+.current-turn {
+  border-color: green;
+}
