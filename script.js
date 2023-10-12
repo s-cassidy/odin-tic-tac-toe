@@ -117,6 +117,7 @@ const game = ((board) => {
     players.pop();
     players.pop();
     currentTurn = null;
+    gameOptionsController.showTurn();
   }
 
   const advanceTurn = function() {
@@ -227,12 +228,15 @@ const gameOptionsController = function() {
 
   function showTurn(currentTurn) {
     for (let player of [pOne, pTwo]) {
-      if (player.symbol.value === currentTurn.symbol) {
-        player.box.classList.add("current-turn");
-      }
-      else {
+      if (!currentTurn) {
         player.box.classList.remove("current-turn");
-      }
+      } else
+        if (player.symbol.value === currentTurn.symbol) {
+          player.box.classList.add("current-turn");
+        }
+        else {
+          player.box.classList.remove("current-turn");
+        }
     }
   }
 

@@ -1,7 +1,11 @@
 body {
   background-color: black; 
-  color: white;
+  color: red;
    }
+
+.title-container {
+font-size: 3em;
+}
 
 .game-board {
   display: grid;
@@ -10,9 +14,12 @@ body {
 }
 
 .grid-square {
-border: 2px solid white;
+border: 2px solid black;
+background-color: rgb(20, 20, 20);
   color: white;
-  font-size : 80px;
+  font-family: sans-serif;
+  font-weight: 900;
+  font-size : 100px;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -22,6 +29,16 @@ border: 2px solid white;
   display: flex;
   width: 600px;
   align-items: center;
+}
+
+.form-row {
+  display: flex;
+  justify-content: space-between;
+}
+
+input {
+  background-color: rgb(20, 20, 20);
+  color: white;
 }
 
 .swap-container {
