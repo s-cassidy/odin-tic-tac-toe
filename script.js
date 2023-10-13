@@ -6,6 +6,9 @@ const gameBoard = (() => {
   let remainingMoves = [];
 
   const reset = function() {
+    while (remainingMoves.length > 0) {
+      remainingMoves.pop();
+    }
     for (let j of [...Array(9).keys()]) {
       remainingMoves.push(j)
     }
@@ -91,7 +94,7 @@ const domBoardController = ((board) => {
 
 
 const game = ((board) => {
-  let players = [];
+  let players = [newPlayer(), newPlayer()];
   let currentTurn;
   let isPlaying = false;
 
@@ -114,8 +117,8 @@ const game = ((board) => {
   }
 
   const reset = function() {
-    players.pop();
-    players.pop();
+    players[0].score = 0;
+    players[1].score = 0;
     currentTurn = null;
     gameOptionsController.showTurn();
   }
@@ -147,13 +150,15 @@ const game = ((board) => {
     if (!currentTurn.hasWon()) {
       if (checkDraw()) {
         console.log("It's a draw");
+        setTimeout(endRound, 2000);
+        setTimeout(domBoardController.clearBoard, 2001);
         return;
       }
       advanceTurn();
     } else {
       domBoardController.showWin(currentTurn.hasWon());
-      isPlaying = false;
       currentTurn.score++;
+      isPlaying = false;
       setTimeout(endRound, 2001);
     }
   }
@@ -165,7 +170,7 @@ const game = ((board) => {
         player.squaresOwned.pop();
       }
     }
-    gameOptionsController.redrawScore(currentTurn.symbol, currentTurn.score);
+    gameOptionsController.redrawScore(players);
     setTimeout(advanceTurn, 100);
     return;
   }
@@ -218,12 +223,9 @@ const gameOptionsController = function() {
     }
   }
 
-  function redrawScore(symbol, score) {
-    for (let player of [pOne, pTwo]) {
-      if (player.symbol.value === symbol) {
-        player.score.value = score;
-      }
-    }
+  function redrawScore(players) {
+    pOne.score.value = players[0].score;
+    pTwo.score.value = players[1].score;
   }
 
   function showTurn(currentTurn) {
@@ -245,10 +247,8 @@ const gameOptionsController = function() {
     if (pOne.name.value === "" || pTwo.name.value === "") {
       return;
     }
-    let playerOne = newPlayer(pOne.symbol.value, pOne.name.value);
-    let playerTwo = newPlayer(pTwo.symbol.value, pTwo.name.value);
-    game.addPlayer(playerOne);
-    game.addPlayer(playerTwo);
+    game.players[0].symbol = pOne.symbol.value;
+    game.players[1].symbol = pTwo.symbol.value;
     for (let prop in pOne) {
       pOne[prop].classList.add("fixed");
       pTwo[prop].classList.add("fixed");
@@ -309,8 +309,9 @@ const utils = (() => {
 })()
 
 
-function newPlayer(symbol, name) {
+function newPlayer() {
   let squaresOwned = [];
+  let symbol = null;
   let score = 0;
 
   const hasWon = function() {
@@ -326,8 +327,7 @@ function newPlayer(symbol, name) {
   }
 
   return {
-    squaresOwned, score, symbol, name, hasWon
+    squaresOwned, symbol, hasWon, score
   };
 }
-
 
