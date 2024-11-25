@@ -1,4 +1,4 @@
-'use strict';
+"use strict";
 
 const MAGIC_NUMBER = 12;
 
@@ -10,18 +10,17 @@ const gameBoard = (() => {
       remainingMoves.pop();
     }
     for (let j of [...Array(9).keys()]) {
-      remainingMoves.push(j)
+      remainingMoves.push(j);
     }
-  }
+  };
 
   const removeRemainingMove = function(number) {
     let index = remainingMoves.indexOf(number);
     remainingMoves.splice(index, 1);
-  }
+  };
 
-  return { remainingMoves, reset, removeRemainingMove }
-})()
-
+  return { remainingMoves, reset, removeRemainingMove };
+})();
 
 const domBoardController = ((board) => {
   let grid = document.querySelectorAll(".grid-square");
@@ -30,38 +29,41 @@ const domBoardController = ((board) => {
     for (let square of grid) {
       let playSquare = function(event) {
         let squareNumber = parseInt(event.target.getAttribute("data-square"));
-        square.classList.remove('hover');
-        game.playMove(squareNumber)
-      }
-      square.addEventListener('click', playSquare)
+        square.classList.remove("hover");
+        game.playMove(squareNumber);
+      };
+      square.addEventListener("click", playSquare);
       let hoverSquare = function(event) {
         let squareNumber = parseInt(event.target.getAttribute("data-square"));
         if (board.remainingMoves.includes(squareNumber)) {
-          square.classList.add('hover');
+          square.classList.add("hover");
           square.textContent = game.getSymbol();
         }
-      }
+      };
       let leaveSquare = function(event) {
         let squareNumber = parseInt(event.target.getAttribute("data-square"));
         if (board.remainingMoves.includes(squareNumber)) {
-          square.classList.remove('hover');
-          square.textContent = '';
+          square.classList.remove("hover");
+          square.textContent = "";
         }
-
-      }
-      square.addEventListener('mouseenter', hoverSquare)
-      square.addEventListener('mouseleave', leaveSquare)
+      };
+      square.addEventListener("mouseenter", hoverSquare);
+      square.addEventListener("mouseleave", leaveSquare);
     }
   }
 
-  function redrawBoard(game) {
+  function drawBoard(game) {
     for (let square of grid) {
       square.textContent = "";
     }
 
     for (let player of game.players) {
       for (let square of grid) {
-        if (player.squaresOwned.includes(parseInt(square.getAttribute("data-square")))) {
+        if (
+          player.squaresOwned.includes(
+            parseInt(square.getAttribute("data-square"))
+          )
+        ) {
           square.textContent = player.symbol;
         }
       }
@@ -72,14 +74,14 @@ const domBoardController = ((board) => {
     for (let square of grid) {
       if (combination.includes(parseInt(square.getAttribute("data-square")))) {
         square.classList.add("winning");
-        setTimeout(() => this.hideWin(), 2000)
+        setTimeout(() => this.hideWin(), 2000);
       }
     }
   }
 
   function hideWin() {
     for (let square of grid) {
-      square.classList.remove("winning")
+      square.classList.remove("winning");
     }
     clearBoard();
   }
@@ -89,9 +91,14 @@ const domBoardController = ((board) => {
       square.textContent = "";
     }
   }
-  return { clearBoard, addBoardListeners, redrawBoard, showWin, hideWin }
-})(gameBoard)
-
+  return {
+    clearBoard,
+    addBoardListeners,
+    redrawBoard: drawBoard,
+    showWin,
+    hideWin,
+  };
+})(gameBoard);
 
 const game = ((board) => {
   let players = [newPlayer(), newPlayer()];
@@ -102,37 +109,37 @@ const game = ((board) => {
     if (players.length < 2) {
       players.push(player);
     }
-  }
+  };
 
   const getSymbol = function() {
     if (currentTurn) {
-      return currentTurn.symbol
+      return currentTurn.symbol;
     }
-  }
+  };
 
   const pickFirstMove = function() {
     isPlaying = true;
     currentTurn = players[Math.floor(Math.random() * 2)];
     gameOptionsController.showTurn(currentTurn);
-  }
+  };
 
   const reset = function() {
     players[0].score = 0;
     players[1].score = 0;
     currentTurn = null;
     gameOptionsController.showTurn();
-  }
+  };
 
   const advanceTurn = function() {
     isPlaying = true;
     let k = players.indexOf(currentTurn);
     currentTurn = players[1 - k];
     gameOptionsController.showTurn(currentTurn);
-  }
+  };
 
   const checkDraw = function() {
     return board.remainingMoves.length === 0;
-  }
+  };
 
   const playMove = function(number) {
     if (!isPlaying) {
@@ -161,10 +168,10 @@ const game = ((board) => {
       isPlaying = false;
       setTimeout(endRound, 2001);
     }
-  }
+  };
 
   const endRound = function() {
-    gameBoard.reset()
+    gameBoard.reset();
     for (const player of players) {
       while (player.squaresOwned.length > 0) {
         player.squaresOwned.pop();
@@ -173,7 +180,7 @@ const game = ((board) => {
     gameOptionsController.redrawScore(players);
     setTimeout(advanceTurn, 100);
     return;
-  }
+  };
 
   return {
     addPlayer,
@@ -184,23 +191,22 @@ const game = ((board) => {
     players,
     pickFirstMove,
     isPlaying,
-  }
-})(gameBoard)
+  };
+})(gameBoard);
 
-
-const gameOptionsController = function() {
-  const swapButton = document.querySelector(".swap")
-  const goButton = document.querySelector(".go")
+const gameOptionsController = (function() {
+  const swapButton = document.querySelector(".swap");
+  const goButton = document.querySelector(".go");
   let pOne = {};
   let pTwo = {};
-  pOne.name = document.querySelector("#player-one-name")
-  pOne.symbol = document.querySelector("#player-one-symbol")
-  pOne.score = document.querySelector("#player-one-score")
-  pTwo.name = document.querySelector("#player-two-name")
-  pTwo.symbol = document.querySelector("#player-two-symbol")
-  pTwo.score = document.querySelector("#player-two-score")
-  pOne.box = document.querySelector(".player-one")
-  pTwo.box = document.querySelector(".player-two")
+  pOne.name = document.querySelector("#player-one-name");
+  pOne.symbol = document.querySelector("#player-one-symbol");
+  pOne.score = document.querySelector("#player-one-score");
+  pTwo.name = document.querySelector("#player-two-name");
+  pTwo.symbol = document.querySelector("#player-two-symbol");
+  pTwo.score = document.querySelector("#player-two-score");
+  pOne.box = document.querySelector(".player-one");
+  pTwo.box = document.querySelector(".player-two");
 
   let resetButton = document.createElement("button");
   resetButton.setAttribute("type", "button");
@@ -208,10 +214,10 @@ const gameOptionsController = function() {
   resetButton.classList.add("reset-button");
   let goContainer = document.querySelector(".go-container");
   let swapContainer = document.querySelector(".swap-container");
-  swapButton.addEventListener('click', swapSymbols);
-  resetButton.addEventListener('click', pressReset)
+  swapButton.addEventListener("click", swapSymbols);
+  resetButton.addEventListener("click", pressReset);
 
-  goButton.addEventListener('click', pressGo);
+  goButton.addEventListener("click", pressGo);
 
   function swapSymbols() {
     if (pOne.symbol.value === "X") {
@@ -232,16 +238,13 @@ const gameOptionsController = function() {
     for (let player of [pOne, pTwo]) {
       if (!currentTurn) {
         player.box.classList.remove("current-turn");
-      } else
-        if (player.symbol.value === currentTurn.symbol) {
-          player.box.classList.add("current-turn");
-        }
-        else {
-          player.box.classList.remove("current-turn");
-        }
+      } else if (player.symbol.value === currentTurn.symbol) {
+        player.box.classList.add("current-turn");
+      } else {
+        player.box.classList.remove("current-turn");
+      }
     }
   }
-
 
   function pressGo() {
     if (pOne.name.value === "" || pTwo.name.value === "") {
@@ -274,9 +277,8 @@ const gameOptionsController = function() {
     pTwo.score.value = 0;
   }
 
-  return { swapSymbols, showTurn, redrawScore }
-}()
-
+  return { swapSymbols, showTurn, redrawScore };
+})();
 
 const utils = (() => {
   const combinationsOf = function(array, choose) {
@@ -285,8 +287,7 @@ const utils = (() => {
 
     if (choose === 1) {
       combinations = array.map((x) => [x]);
-    }
-    else {
+    } else {
       let partialArray;
       let element;
       for (let i = 0; i < n; i++) {
@@ -299,22 +300,21 @@ const utils = (() => {
       }
     }
     return combinations;
-  }
+  };
 
   const sum = function(array) {
-    return array.reduce((T, x) => T + x)
-  }
+    return array.reduce((T, x) => T + x);
+  };
 
   return { sum, combinationsOf };
-})()
-
+})();
 
 function newPlayer() {
   let squaresOwned = [];
   let symbol = null;
   let score = 0;
 
-  const hasWon = function() {
+  const checkWin = function() {
     if (squaresOwned.length < 3) {
       return false;
     }
@@ -324,10 +324,12 @@ function newPlayer() {
       }
     }
     return false;
-  }
+  };
 
   return {
-    squaresOwned, symbol, hasWon, score
+    squaresOwned,
+    symbol,
+    checkWin,
+    score,
   };
 }
-
